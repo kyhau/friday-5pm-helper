@@ -127,9 +127,6 @@ def main():
     # Retrieve the start date (Monday) and end date (Sunday) of this week
     (start_date, end_date) = start_and_end_of_week_of_a_day(datetime.utcnow())
 
-    from_y, from_m, from_d = 2016,10,31
-    to_y, to_m, to_d = 2016,11,24
-
     # Retrieve user data
     time_entry_data_list = retrieve_user_data(start_date, end_date)
 

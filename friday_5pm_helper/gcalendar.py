@@ -5,7 +5,11 @@ import sys
 from apiclient import discovery
 from datetime import datetime
 
-from friday_5pm_helper import TimeEntryData, worklog_time_spent
+from friday_5pm_helper import (
+    EXPECTED_DATETIME_FORMATS,
+    TimeEntryData,
+    worklog_time_spent
+)
 from friday_5pm_helper.credentials import get_credentials
 
 # If modifying these scopes, delete your previously saved credentials
@@ -56,17 +60,15 @@ def calc_interval(start_time, end_time):
     :param end_time: end time in datetime
     :return: string hh:mm
     """
-    DATETIME_STR_FORMAT_1 = '%Y-%m-%dT%H:%M:%S+11:00'
-    DATETIME_STR_FORMAT_2 = '%Y-%m-%dT%H:%M:%S+10:00'
-
-    for f in [DATETIME_STR_FORMAT_1, DATETIME_STR_FORMAT_2]:
+    for f in EXPECTED_DATETIME_FORMATS:
         try:
             end_dt = datetime.strptime(end_time, f)
             start_dt = datetime.strptime(start_time, f)
             t_delta_secs = (end_dt - start_dt).seconds
             return (worklog_time_spent(t_delta_secs), start_dt, end_dt)
-        except:
+        except Exception as e:
             pass
+    print('Error: unable to parse {} and {}'.format(start_time, end_time))
     return None
 
 
@@ -81,6 +83,7 @@ def retrieve_gcalendar_event_data(start_date, end_date):
     for event in GCalendarClient().gcalendar_events(start_date, end_date):
         start_time_str = event['start'].get('dateTime', event['start'].get('date'))
         end_time_str = event['end'].get('dateTime', event['end'].get('date'))
+
         (interval, start, end) = calc_interval(start_time_str, end_time_str)
 
         time_entry_data_list.append(TimeEntryData(

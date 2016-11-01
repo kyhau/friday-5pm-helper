@@ -5,15 +5,19 @@ from datetime import datetime, timedelta
 
 TimeEntryData = namedtuple('TimeEntryData', 'year month day interval comment task_uri')
 
+EXPECTED_DATETIME_FORMATS = [
+    '%Y-%m-%dT%H:%M:%S+11:00',
+    '%Y-%m-%dT%H:%M:%S+10:00',
+    '%Y-%m-%d'
+]
+
 
 def worklog_time_spent(time_spent_secs):
     return '{:02d}:{:02d}'.format(time_spent_secs / 3600, time_spent_secs % 3600 / 60)
 
 
 def worklog_date(updated_date_str):
-    DATETIME_STR_FORMAT_1 = '%Y-%m-%dT%H:%M:%S+11:00'
-    DATETIME_STR_FORMAT_2 = '%Y-%m-%dT%H:%M:%S+10:00'
-    for f in [DATETIME_STR_FORMAT_1, DATETIME_STR_FORMAT_2]:
+    for f in EXPECTED_DATETIME_FORMATS:
         try:
             updated_dt = datetime.strptime(updated_date_str, f)
             return updated_dt
