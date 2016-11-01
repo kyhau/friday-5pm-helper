@@ -91,3 +91,6 @@ env/
 
 # pycharm
 .idea
+
+# test file
+*.json

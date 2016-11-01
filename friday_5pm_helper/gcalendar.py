@@ -11,7 +11,7 @@ from friday_5pm_helper.credentials import get_credentials
 # at ~/.credentials/gsuite_utilities_gcalendar.json
 LOCAL_CREDENTIAL_FILE = 'gsuite_utilities_gcalendar.json'
 SCOPES = 'https://www.googleapis.com/auth/calendar.readonly'
-CLIENT_SECRET_FILE = 'client_secret_gsuite_utilities.json'
+CLIENT_SECRET_FILE = 'client_secret_gcalendar.json'
 APPLICATION_NAME = 'G Suite Utilities'
 
 
@@ -68,7 +68,7 @@ def calc_duration(start_time, end_time):
             return t_delta_secs
         except:
             pass
-    return None
+    return t_delta_secs
 
 
 def calc_duration_str(start_time, end_time):
