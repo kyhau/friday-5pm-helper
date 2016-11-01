@@ -18,7 +18,6 @@ class RepliconClient():
 
     def __init_swimlane(self):
         """
-
         :return:
         """
         try:
@@ -39,9 +38,8 @@ class RepliconClient():
 
             swimlane = swimlaneFinder['d']['applicationRootUrl']
             return swimlane
-        except Exception, e:
+        except Exception as e:
             print('Error: {0}'.format(e))
-
 
     def process_request(self, request_data):
         """
@@ -60,7 +58,7 @@ class RepliconClient():
                 return None
             return ret_data['d']
 
-        except Exception, e:
+        except Exception as e:
             print('Error: {0}'.format)
 
     def post_request(self, service_url, service_data):
