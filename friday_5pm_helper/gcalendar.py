@@ -49,21 +49,12 @@ def gcalendar_events(service):
     return eventsResult.get('items', [])
 
 
-def main():
-    service = gcalendar_service()
-
-    events = gcalendar_events(service)
-
-    if not events:
-        print('No upcoming events found.')
-    for event in events:
-        start_time = event['start'].get('dateTime', event['start'].get('date'))
-        end_time = event['end'].get('dateTime', event['end'].get('date'))
-        duration = calc_duration(start_time, end_time)
-        print(start_time, end_time, duration, event['summary'], event['status'])
-
-
 def calc_duration(start_time, end_time):
+    """
+    :param start_time: start time in datetime
+    :param end_time: end time in datetime
+    :return: time delta in seconds
+    """
     DATETIME_STR_FORMAT_1 = '%Y-%m-%dT%H:%M:%S+11:00'
     DATETIME_STR_FORMAT_2 = '%Y-%m-%dT%H:%M:%S+10:00'
 
@@ -74,11 +65,36 @@ def calc_duration(start_time, end_time):
             end_dt = datetime.strptime(end_time, f)
             start_dt = datetime.strptime(start_time, f)
             t_delta_secs = (end_dt - start_dt).seconds
-            break
+            return t_delta_secs
         except:
             pass
+    return None
 
-    return '{:02d}:{:02d}'.format(t_delta_secs/3600, t_delta_secs%3600/60)
+
+def calc_duration_str(start_time, end_time):
+    """
+    :param start_time: start time in datetime
+    :param end_time: end time in datetime
+    :return: string hh:mm
+    """
+    t_delta_secs = calc_duration(start_time, end_time)
+    if t_delta_secs:
+        return '{:02d}:{:02d}'.format(t_delta_secs/3600, t_delta_secs%3600/60)
+    return None
+
+
+def main():
+    service = gcalendar_service()
+
+    events = gcalendar_events(service)
+
+    if not events:
+        print('No upcoming events found.')
+    for event in events:
+        start_time = event['start'].get('dateTime', event['start'].get('date'))
+        end_time = event['end'].get('dateTime', event['end'].get('date'))
+        duration = calc_duration_str(start_time, end_time)
+        print(start_time, end_time, duration, event['summary'], event['status'])
 
 if __name__ == '__main__':
     sys.exit(main())
