@@ -3,11 +3,18 @@ import sys
 
 from datetime import datetime
 
+from friday_5pm_helper import (
+    read_json,
+    start_and_end_of_week_of_a_day,
+    unique_unit_of_work_id
+)
 import friday_5pm_helper.gcalendar as g
 import friday_5pm_helper.jira_checker as j
-from friday_5pm_helper import read_json, start_and_end_of_week_of_a_day
 from friday_5pm_helper.replicon_services import service_defs
 from friday_5pm_helper.replicon_services.client import RepliconClient
+
+# Default replicon configs file (json)
+REPLICON_CONFIGS_JSON = 'client_replicon_configs.json'
 
 # Default client credentials file
 REPLICON_JSON = 'client_secret_replicon.json'
@@ -20,21 +27,19 @@ ARG_UNAME="login_name"
 ARG_UPASS="login_pass"
 
 
-def retrieve_user_data(start_date, end_date):
+def retrieve_user_data(start_date, end_date, tasks_info):
     """
     Retrieves user data from different sources.
     :return: a list of TimeEntryData
     """
     # Retrieve calendar events
-    print('Retrieving Google Calendar event data ...')
-    time_entry_data_list = g.retrieve_gcalendar_event_data(start_date, end_date)
-    for i in time_entry_data_list:
-        print(i)
+    print('Retrieving Google Calendar events ...')
+    time_entry_data_list = g.retrieve_gcalendar_event_data(start_date, end_date, tasks_info['calendar'])
+    print('{} event found'.format(len(time_entry_data_list)))
 
     print('Retrieving JIRA issues being updated since the start of the week ...')
-    time_entry_data_list_2 = j.retrieve_jira_issues_updated_since_start_of_week()
-    for i in time_entry_data_list_2:
-        print(i)
+    time_entry_data_list_2 = j.retrieve_jira_issues_updated_since_start_of_week(start_date, end_date, tasks_info['jira'])
+    print('{} issues found'.format(len(time_entry_data_list_2)))
 
     return time_entry_data_list + time_entry_data_list_2
 
@@ -46,8 +51,9 @@ def create_replicon_time_entries(replicon_client, time_entry_data_list):
     :return: result
     """
     print('Creating replicon time entries ...')
-    for i in time_entry_data_list:
-        try:
+    try:
+        for i in time_entry_data_list:
+
             interval_parts = i.interval.split(':')
 
             request_data = service_defs.put_time_entry(
@@ -55,15 +61,19 @@ def create_replicon_time_entries(replicon_client, time_entry_data_list):
                 y=i.year,
                 m=i.month,
                 d=i.day,
-                hrs=int(interval_parts[0]),
-                mins=int(interval_parts[1]),
-                task_uri=i.task_uri
+                hrs=interval_parts[0],
+                mins=interval_parts[1],
+                task_uri=replicon_client.uri_path_time_entry.format(i.taskid),
+                comment=i.comment,
+                unique_unit_of_work_id=unique_unit_of_work_id()
             )
-            ret = replicon_client.process_request(request_data)
-            print(ret)
 
-        except Exception as e:
-            print('Error {}'.format(e))
+            ret = replicon_client.process_request(request_data)
+            if ret is None:
+                break
+
+    except Exception as e:
+        print('Error {}'.format(e))
 
 
 def retrieve_user_uri(replicon_client):
@@ -110,8 +120,9 @@ def retrieve_time_entry_list(replicon_client, login_name, start_date, end_date):
 
 def print_time_entry_list(time_entry_list):
     for i in time_entry_list:
+        if i['interval'] is None:
+            continue
         print('---------------------------------------------')
-        print('Entry {}:'.format(i))
         print(i['entryDate'])
         print(i['interval'])
         for m in i['customMetadata']:
@@ -127,8 +138,12 @@ def main():
     # Retrieve the start date (Monday) and end date (Sunday) of this week
     (start_date, end_date) = start_and_end_of_week_of_a_day(datetime.utcnow())
 
+    print('Started checking {} to {} ...'.format(start_date, end_date))
+
+    replicon_configs = read_json(REPLICON_CONFIGS_JSON)
+
     # Retrieve user data
-    time_entry_data_list = retrieve_user_data(start_date, end_date)
+    time_entry_data_list = retrieve_user_data(start_date, end_date, replicon_configs['tasks'])
 
     # Prepare connection to replicon
     user_profile = read_json(REPLICON_JSON)
@@ -139,10 +154,12 @@ def main():
     )
 
     # Create and push new time entries
-    #create_replicon_time_entries(replicon_client, time_entry_data_list)
+    create_replicon_time_entries(replicon_client, time_entry_data_list)
 
     # Retrieve time entries from Replicon
-    retrieve_time_entry_list(replicon_client, replicon_client.login_name, start_date, end_date)
+    #retrieve_time_entry_list(replicon_client, replicon_client.login_name, start_date, end_date)
+
+    print("Done")
 
     return 0
 

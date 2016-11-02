@@ -49,11 +49,13 @@ def get_time_entries_for_user_and_date_range(
         }
     )
 
-def put_time_entry(login_name, y, m, d, hrs, mins, task_uri):
+def put_time_entry(login_name, y, m, d, hrs, mins, task_uri, comment, unique_unit_of_work_id):
     return RequestData(
         service_url='TimeEntryService3.svc/PutTimeEntry',
         data={
             "timeEntry": {
+                "target": {
+                },
                 "user": {
                     "loginName": login_name,
                 },
@@ -70,7 +72,7 @@ def put_time_entry(login_name, y, m, d, hrs, mins, task_uri):
                     "hours": {
                         "hours": hrs,
                         "minutes": mins,
-                        "seconds": 0,
+                        "seconds": "0",
                     },
                 },
                 "customMetadata": [
@@ -79,11 +81,17 @@ def put_time_entry(login_name, y, m, d, hrs, mins, task_uri):
                         "value": {
                             "uri": task_uri,
                         }
+                    },
+                    {
+                        "keyUri": "urn:replicon:time-entry-metadata-key:comments",
+                        "value": {
+                            "text": comment
+                        }
                     }
                 ],
                 "extensionFieldValues": []
             },
-            "unitOfWorkId": "hours"
+            "unitOfWorkId": unique_unit_of_work_id
         }
     )
 

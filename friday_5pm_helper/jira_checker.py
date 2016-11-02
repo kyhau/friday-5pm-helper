@@ -40,7 +40,7 @@ class JiraClient():
         :return:
         """
         issues = self.service.search_issues(
-            'assignee = {} AND updated > startOfWeek(-1w) ORDER BY updated ASC'.format(uname)
+            'assignee = {} AND updated > startOfWeek(-1w) AND status not in (Open, Reopened) ORDER BY updated ASC'.format(uname)
         )
         ret_issues = []
         for i in issues:
@@ -53,20 +53,35 @@ class JiraClient():
                         'key': i.key,
                         'summary': fields.summary,
                         'worklog_date': w.updated,
-                        'worklog_time_spent': worklog_time_spent(w.timeSpentSeconds)
+                        'worklog_time_spent': worklog_time_spent(w.timeSpentSeconds),
+                        'components': fields.components
                     })
             else:
                 ret_issues.append({
                     'key': i.key,
                     'summary': fields.summary,
                     'worklog_date': None,
-                    'worklog_time_spent': '01:00'
+                    'worklog_time_spent': '01:00',
+                    'components': fields.components
                 })
 
         return ret_issues
 
 
-def retrieve_jira_issues_updated_since_start_of_week(client_secret_json=JIRA_JSON):
+def find_task_id(issue, tasks_info):
+    # TODO
+    # Need a better way to filter jiras and mapping to replicon tasks
+
+    for k, v in tasks_info.iteritems():
+        if v['key'] == 'component' and v['value'] in issue['components']:
+            return v['taskid']
+
+    return tasks_info['Development']['taskid']
+
+
+def retrieve_jira_issues_updated_since_start_of_week(
+        start_date, end_date, tasks_info, client_secret_json=JIRA_JSON
+):
     """
     Retrieve jira issues' data in TimeEntryData format
     :return: list of TimeEntryData
@@ -85,20 +100,34 @@ def retrieve_jira_issues_updated_since_start_of_week(client_secret_json=JIRA_JSO
     for i in issues:
         updated_date = worklog_date(i['worklog_date'])
 
+        # the issue may have been updated this week but the worklog may be created much earlier
+        if start_date > updated_date or updated_date > end_date:
+            continue
+
         time_entry_data_list.append(TimeEntryData(
             year=updated_date.year,
             month=updated_date.month,
             day=updated_date.day,
             interval=i['worklog_time_spent'],
             comment='{} {}'.format(i['key'], i['summary']),
-            task_uri='TODO'
+            taskid=find_task_id(i, tasks_info)
         ))
 
     return time_entry_data_list
 
 
 def main():
-    retrieve_jira_issues_updated_since_start_of_week()
+    from datetime import datetime
+    from friday_5pm_helper import start_and_end_of_week_of_a_day
+
+    today = datetime.utcnow()
+    (start_date, end_date) = start_and_end_of_week_of_a_day(today)
+    print(start_date, end_date)
+
+    tasks_info = read_json('client_replicon_configs.json')['tasks']['jira']
+    ret = retrieve_jira_issues_updated_since_start_of_week(start_date, end_date, tasks_info=tasks_info)
+    for r in ret:
+        print(r)
     return 0
 
 if __name__ == '__main__':

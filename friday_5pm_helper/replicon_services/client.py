@@ -15,6 +15,7 @@ class RepliconClient():
         self.login_name = login_name
         self.login_pass = login_pass
         self.swimlane = self.__init_swimlane()
+        self.uri_path_time_entry = 'urn:replicon-tenant:' + company_key.lower() + ':task:{}'
 
     def __init_swimlane(self):
         """

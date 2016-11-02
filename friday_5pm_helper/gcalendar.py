@@ -72,7 +72,7 @@ def calc_interval(start_time, end_time):
     return None
 
 
-def retrieve_gcalendar_event_data(start_date, end_date):
+def retrieve_gcalendar_event_data(start_date, end_date, tasks_info):
     """
     Retrieve calendar events' data in TimeEntryData format
     :return: list of TimeEntryData
@@ -92,7 +92,7 @@ def retrieve_gcalendar_event_data(start_date, end_date):
             day=start.day,
             interval=interval,
             comment=event['summary'],
-            task_uri='TODO'
+            taskid=tasks_info['InternalMeeting']
         ))
 
     return time_entry_data_list
@@ -102,9 +102,9 @@ if __name__ == '__main__':
     from friday_5pm_helper import start_and_end_of_week_of_a_day
 
     today = datetime.utcnow()
-    (time_min, time_max) = start_and_end_of_week_of_a_day(today)
+    (start_date, end_date) = start_and_end_of_week_of_a_day(today)
 
-    ret = retrieve_gcalendar_event_data(time_min, time_max)
+    ret = retrieve_gcalendar_event_data(start_date, end_date, tasks_info={'InternalMeeting':'123'})
     for i in ret:
         print(i)
 
