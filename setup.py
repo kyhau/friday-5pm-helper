@@ -22,6 +22,7 @@ with open(os.path.join(base_dir, "README.md")) as f:
 
 entry_points = {
     'console_scripts': [
+        'replicon-helper = friday_5pm_helper.replicon:main',
         'gcalendar-helper = friday_5pm_helper.gcalendar:main',
         'jira-helper = friday_5pm_helper.jira_checker:main',
     ]

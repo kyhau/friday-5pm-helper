@@ -69,9 +69,11 @@ class RepliconClient():
         :return:
         """
         target_url = '{}/services/{}'.format(self.swimlane, service_url)
+        d = json.dumps(service_data)
+        print(d)
         return requests.post(
             target_url,
-            data=json.dumps(service_data),
+            data=d,
             headers=HEADERS,
             auth=(self.company_key + '\\' + self.login_name, self.login_pass)
         )

@@ -1,0 +1,19 @@
+{
+  "tasks":{
+        "calendar": {
+            "InternalMeeting": "42"
+        },
+        "jira" : {
+          "categoryA": {
+            "taskid": "33",
+            "key": "key00",
+            "value": "value01"
+          },
+          "categoryB": {
+            "taskid": "32",
+            "key": "key11",
+            "value": "value02"
+          }
+        }
+    }
+}
