@@ -2,7 +2,7 @@
 Scripts for pre-filling Replicon timesheet with Google Calendar events and JIRA entries
 
 ## Build
-[![Build Status](https://travis-ci.org/kyhau/friday-5pm-helper.svg?branch=master)](https://travis-ci.org/kyhau/friday-5pm-helper)
+2.7 [![Build Status](https://travis-ci.org/kyhau/friday-5pm-helper.svg?branch=master)](https://travis-ci.org/kyhau/friday-5pm-helper)
 
 **Linux**
 
