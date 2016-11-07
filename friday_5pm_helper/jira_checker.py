@@ -40,7 +40,7 @@ class JiraClient():
         :return:
         """
         issues = self.service.search_issues(
-            'assignee = {} AND updated > startOfWeek(-1w) AND status not in (Open, Reopened) ORDER BY updated ASC'.format(uname)
+            'assignee = {} AND updated > startOfWeek(-1w) AND (resolved is EMPTY OR resolved > startOfWeek(-1w)) AND status not in (Open, Reopened) ORDER BY updated ASC'.format(uname)
         )
         ret_issues = []
         for i in issues:
