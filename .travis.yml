@@ -6,7 +6,6 @@ matrix:
     - python: 3.6
       env: TOXENV=py36
     - python: nightly
-      dist: xenial
       env: TOXENV=py37
     #allow_failures:
     #- env: TOXENV=py37
